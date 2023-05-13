@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bufio"
-	"log"
 	"os"
 	"warehouse/database"
 	"warehouse/database/credentials"
+	"warehouse/routes"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,20 +17,13 @@ func main() {
 	// Connect to the database
 	database.Connect()
 
-	scanner := bufio.NewScanner(os.Stdin)
-
-	log.Println("Do you want to run this node in testing mode? (y/n)")
-
-	scanner.Scan()
-	testMode := scanner.Text() == "y"
+	testMode := os.Getenv("TEST_MODE") == "true"
 
 	// Fiber
 	app := fiber.New()
 
 	// Routes
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	app.Route("/", routes.SetupRoutes)
 
 	// Listen on default port
 	port := os.Getenv("PORT")
