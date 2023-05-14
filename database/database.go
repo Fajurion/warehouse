@@ -32,6 +32,7 @@ func Connect() {
 	driver.SetMaxOpenConns(100)
 
 	// Migrate the schema
+	db.AutoMigrate(&entities.Role{})
 	db.AutoMigrate(&entities.TFA{})
 	db.AutoMigrate(&entities.Key{})
 	db.AutoMigrate(&entities.App{})
@@ -41,6 +42,29 @@ func Connect() {
 	db.AutoMigrate(&entities.Version{})
 	db.AutoMigrate(&entities.Branch{})
 
+	// Create default roles
+	if db.Where("name = ?", "Administrator").First(&entities.Role{}).RowsAffected == 0 {
+		db.Create(&entities.Role{
+			Name:            "Default",
+			PermissionLevel: 0,
+		})
+
+		db.Create(&entities.Role{
+			Name:            "Administrator",
+			PermissionLevel: 100,
+		})
+	}
+
 	// Assign the database to the global variable
 	DBConn = db
+}
+
+func DefaultRole() (entities.Role, error) {
+
+	var role entities.Role
+	if err := DBConn.Where("name = ?", "Default").First(&role).Error; err != nil {
+		return role, err
+	}
+
+	return role, nil
 }

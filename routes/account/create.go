@@ -40,9 +40,16 @@ func createAccount(c *fiber.Ctx) error {
 
 	// Create account
 	pw := util.GenerateToken(32)
+
+	role, err := database.DefaultRole()
+	if err != nil {
+		return util.FailedRequest(c, "failed.create", err)
+	}
+
 	database.DBConn.Create(&entities.Account{
 		Username: request.Username,
 		Password: util.HashPassword(pw),
+		Role:     role.ID,
 	})
 
 	// Return password
