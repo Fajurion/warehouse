@@ -12,7 +12,7 @@ import (
 type createRequest struct {
 
 	// Admin token
-	AdminToken string `json:"admin_token" validate:"required"`
+	License string `json:"license" validate:"required"`
 
 	// Details of the account
 	Username string `json:"username" validate:"required,max=32,min=3"`
@@ -34,7 +34,7 @@ func createAccount(c *fiber.Ctx) error {
 	}
 
 	// Check if admin token is valid
-	if request.AdminToken != os.Getenv("ADMIN_TOKEN") {
+	if request.License != os.Getenv("ADMIN_TOKEN") {
 		return util.InvalidRequest(c)
 	}
 
@@ -46,11 +46,13 @@ func createAccount(c *fiber.Ctx) error {
 		return util.FailedRequest(c, "failed.create", err)
 	}
 
-	database.DBConn.Create(&entities.Account{
+	if database.DBConn.Create(&entities.Account{
 		Username: request.Username,
 		Password: util.HashPassword(pw),
 		Role:     role.ID,
-	})
+	}).Error != nil {
+		return util.FailedRequest(c, "username.taken", nil)
+	}
 
 	// Return password
 	return c.Status(200).JSON(fiber.Map{
