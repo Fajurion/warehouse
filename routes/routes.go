@@ -3,6 +3,7 @@ package routes
 import (
 	"os"
 	"warehouse/routes/account"
+	"warehouse/routes/app"
 	"warehouse/routes/auth"
 	"warehouse/routes/vault"
 	"warehouse/util"
@@ -40,5 +41,6 @@ func SetupRoutes(router fiber.Router) {
 	}))
 
 	router.Route("/vault", vault.SetupRoutes)
+	router.Route("/app", app.SetupRoutes)
 
 }
